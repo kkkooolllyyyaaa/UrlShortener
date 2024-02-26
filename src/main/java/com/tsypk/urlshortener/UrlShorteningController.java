@@ -4,19 +4,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class UrlShorteningController {
 
+    private final UrlShorteningService urlShorteningService;
+
     @Autowired
-    private UrlShorteningService urlShorteningService;
+    public UrlShorteningController(UrlShorteningService urlShorteningService) {
+        this.urlShorteningService = urlShorteningService;
+    }
 
     @PostMapping("/shorten")
-    public ResponseEntity<?> shortenUrl(@RequestBody Map<String, String> request) {
-        String originalUrl = request.get("url");
-        String shortUrlHash = urlShorteningService.createShortUrl(originalUrl);
-        return ResponseEntity.ok(Map.of("shortUrl", "http://localhost:8080/" + shortUrlHash));
+    public ResponseEntity<ShortenUrlResponse> shortenUrl(@RequestBody ShortenUrlRequest request) {
+        return urlShorteningService.allocateShortUrl(request.getUrl())
+                .map(shortenedUrl -> ResponseEntity.ok(new ShortenUrlResponse(shortenedUrl.getShortCode())))
+                .orElse(ResponseEntity.badRequest().body(new ShortenUrlResponse("Error: Could not allocate a short URL.")));
     }
 
     @GetMapping("/{shortUrlHash}")

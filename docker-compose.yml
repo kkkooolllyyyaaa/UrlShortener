@@ -14,4 +14,4 @@ services:
       - mydb:/var/lib/postgresql/data
 
 volumes:
-  mydb:
+  mydb: {}

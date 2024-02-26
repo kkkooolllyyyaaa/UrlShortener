@@ -2,7 +2,9 @@ package com.tsypk.urlshortener;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UrlMappingRepository extends JpaRepository<UrlMapping, Long> {
-    UrlMapping findByShortUrlHash(String shortUrlHash);
-}
+import java.util.Optional;
 
+public interface UrlMappingRepository extends JpaRepository<ShortenedUrl, Long> {
+    Optional<ShortenedUrl> findByShortCode();
+    long findByShortCodeIsNull();
+}

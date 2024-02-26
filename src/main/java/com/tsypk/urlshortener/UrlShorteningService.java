@@ -3,32 +3,36 @@ package com.tsypk.urlshortener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
 public class UrlShorteningService {
 
+    private final UrlMappingRepository urlMappingRepository;
+
     @Autowired
-    private UrlMappingRepository urlMappingRepository;
-
-    public String createShortUrl(String originalUrl) {
-        // Логика для генерации короткого хэша
-        String shortUrlHash = generateShortUrlHash();
-        UrlMapping urlMapping = new UrlMapping();
-        urlMapping.setOriginalUrl(originalUrl);
-        urlMapping.setShortUrlHash(shortUrlHash);
-        urlMappingRepository.save(urlMapping);
-        return shortUrlHash;
+    public UrlShorteningService(UrlMappingRepository urlMappingRepository) {
+        this.urlMappingRepository = urlMappingRepository;
     }
 
-    public Optional<String> getOriginalUrl(String shortUrlHash) {
-        return Optional.ofNullable(urlMappingRepository.findByShortUrlHash(shortUrlHash))
-                .map(UrlMapping::getOriginalUrl);
+    public Optional<ShortenedUrl> allocateShortUrl(String originalUrl) {
+        Optional<ShortenedUrl> shortUrlOpt = urlMappingRepository.findByShortCode();
+        if (shortUrlOpt.isPresent()) {
+            ShortenedUrl shortUrl = shortUrlOpt.get();
+            shortUrl.setOriginalUrl(originalUrl);
+            shortUrl.setCreatedAt(LocalDateTime.now());
+            urlMappingRepository.save(shortUrl);
+            return Optional.of(shortUrl);
+        }
+        return
+                Optional.empty();
     }
-
-    private String generateShortUrlHash() {
-        // Примерная реализация генерации хэша
-        return Long.toHexString(Double.doubleToLongBits(Math.random()));
+    public Optional<String> getOriginalUrl(String shortCode) {
+        return urlMappingRepository.findById(shortCode)
+                .map(ShortenedUrl::getOriginalUrl);
     }
 }
+
+
 
