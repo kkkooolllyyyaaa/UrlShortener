@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ShortenedUrl {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_seq")
     private Long id;
 
     @Column(name = "short_code", nullable = false, length = 20)
