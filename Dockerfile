@@ -1,11 +1,9 @@
-# Используйте официальный образ базового слоя Java 17 от AdoptOpenJDK
-FROM adoptopenjdk/openjdk17:alpine-jre
+FROM maven:3.6.3-jdk-11 AS build
+COPY src /usr/src/app/src
+COPY pom.xml /usr/src/app
+RUN mvn -f /usr/src/app/pom.xml clean package -DskipTests=true
 
-# Указание рабочей директории внутри контейнера
-WORKDIR /app
-
-# Копирование jar-файла вашего приложения в рабочую директорию контейнера
-COPY build/libs/your-app.jar app.jar
-
-# Команда, которая будет выполнена при запуске контейнера
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM openjdk:13-jdk-alpine
+COPY --from=build /usr/src/app/target/url-shortener-api-0.0.1-SNAPSHOT.jar /usr/src/app/url-shortener-api-0.0.1-SNAPSHOT.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/usr/src/app/url-shortener-api-0.0.1-SNAPSHOT.jar"]
